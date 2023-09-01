@@ -35,8 +35,7 @@ router.delete("/:contactId", async (req, res, next) => {
   }
   res.status(200).json({ message: "contact deleted" });
 });
-// validateBody(schemas.addSchema)
-// validateBody(schemas.updateSchema)
+
 router.put(
   "/:contactId",
   validateBody(schemas.updateSchema),
