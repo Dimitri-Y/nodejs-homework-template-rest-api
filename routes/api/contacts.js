@@ -21,7 +21,7 @@ router.put(
   ctrlContact.updateContact
 );
 router.patch(
-  "/:id/favorite",
+  "/:contactId/favorite",
   isValidId,
   validateBody(schemas.updateFavoriteSchema),
   ctrlContact.updateStatusContact
