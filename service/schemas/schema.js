@@ -11,8 +11,11 @@ const updateSchema = Joi.object({
   email: Joi.string(),
   phone: Joi.string(),
 });
-
+const updateFavoriteSchema = Joi.object({
+  favorite: Joi.boolean().required(),
+});
 module.exports = {
   addSchema,
   updateSchema,
+  updateFavoriteSchema,
 };
