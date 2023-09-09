@@ -40,6 +40,18 @@ const updateContact = async (req, res, next) => {
   }
   res.json(updatedContact);
 };
+const updateStatusContact = async (req, res, next) => {
+  const body = req.body;
+  if (!body) {
+    res.status(404).json({ message: "missing field favorite" });
+  }
+  const { contactId } = req.params;
+  const updatedContact = await service.updateStatusContact(contactId, body);
+  if (!updatedContact) {
+    res.status(404).json({ message: "Not found contact with their Id" });
+  }
+  res.json(updatedContact);
+};
 
 module.exports = {
   listContacts: ctrlShell(listContacts),
@@ -47,4 +59,5 @@ module.exports = {
   removeContact: ctrlShell(removeContact),
   addContact: ctrlShell(addContact),
   updateContact: ctrlShell(updateContact),
+  updateStatusContact: ctrlShell(updateStatusContact),
 };

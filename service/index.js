@@ -19,11 +19,16 @@ const updateContact = (id, fields) => {
 const removeContact = (id) => {
   return Contact.findByIdAndRemove({ _id: id });
 };
-
+const updateStatusContact = (id, fields) => {
+  return Contact.findByIdAndUpdate({ _id: id }, fields, {
+    new: true,
+  });
+};
 module.exports = {
   listContacts,
   getContactById,
   addContact,
   updateContact,
   removeContact,
+  updateStatusContact,
 };
