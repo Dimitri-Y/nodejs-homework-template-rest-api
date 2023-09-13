@@ -1,8 +1,9 @@
 const ctrlShell = require("../models/ctrlShell");
 const bcrypt = require("bcryptjs");
-const User = require("../models/schemas/user");
+const { User } = require("../models/schemas/user");
 const jwt = require("jsonwebtoken");
 
+require("dotenv").config();
 const { JWT_SECRET } = process.env;
 
 const register = async (req, res) => {
@@ -53,13 +54,36 @@ const login = async (req, res) => {
   };
 
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "23h" });
-
-  res.json({
-    token,
-  });
+  try {
+    const userAuth = await User.findByIdAndUpdate(user._id, { token });
+    res.status(200).json({
+      message: "OK",
+      token,
+      data: { email: userAuth.email, subscription: userAuth.subscription },
+    });
+  } catch (e) {
+    res.json({ error: e.message });
+  }
 };
 
+const logout = async (req, res) => {
+  const { _id } = req.user;
+  await User.findByIdAndUpdate(_id, { token: "" });
+  res.status(204).json({ message: "No Content" });
+};
+const currentUser = async (req, res) => {
+  const { email, subscription } = req.user;
+  res.status(200).json({
+    message: "OK",
+    data: {
+      email: email,
+      subscription: subscription,
+    },
+  });
+};
 module.exports = {
   register: ctrlShell(register),
   login: ctrlShell(login),
+  logout: ctrlShell(logout),
+  currentUser: ctrlShell(currentUser),
 };
