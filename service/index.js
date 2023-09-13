@@ -1,4 +1,4 @@
-const Contact = require("./schemas/contact");
+const Contact = require("../models/schemas/contact");
 
 const listContacts = async () => {
   return Contact.find();
@@ -24,6 +24,7 @@ const updateStatusContact = (id, fields) => {
     new: true,
   });
 };
+
 module.exports = {
   listContacts,
   getContactById,
