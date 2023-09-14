@@ -54,16 +54,12 @@ const login = async (req, res) => {
   };
 
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "23h" });
-  try {
-    const userAuth = await User.findByIdAndUpdate(user._id, { token });
-    res.status(200).json({
-      message: "OK",
-      token,
-      data: { email: userAuth.email, subscription: userAuth.subscription },
-    });
-  } catch (e) {
-    res.json({ error: e.message });
-  }
+  await User.findByIdAndUpdate(user._id, { token });
+  res.status(200).json({
+    message: "OK",
+    token,
+    data: { email: user.email, subscription: user.subscription },
+  });
 };
 
 const logout = async (req, res) => {
