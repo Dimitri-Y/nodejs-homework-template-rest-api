@@ -1,4 +1,4 @@
-const User = require("../models/schemas/user");
+const { User } = require("../models/schemas/user");
 const jwt = require("jsonwebtoken");
 
 require("dotenv").config();
@@ -28,9 +28,8 @@ require("dotenv").config();
 const auth = async (req, res, next) => {
   const { authorization = "" } = req.headers;
   const [bearer, token] = authorization.split(" ");
-  console.log(authorization);
   if (bearer !== "Bearer") {
-    next(Error(`401: "Not authorized" `));
+    next(Error(`401: "Not authorized"`));
   }
   try {
     const { id } = jwt.verify(token, process.env.JWT_SECRET);

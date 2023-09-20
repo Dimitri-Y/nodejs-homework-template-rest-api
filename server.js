@@ -2,7 +2,7 @@ const app = require("./app");
 const path = require("path");
 const fs = require("fs").promises;
 
-const uploadDir = path.join(process.cwd(), "public/uploads");
+const uploadDir = path.join(process.cwd(), "tmp");
 const storeImage = path.join(process.cwd(), "public/avatars");
 
 const mongoose = require("mongoose");

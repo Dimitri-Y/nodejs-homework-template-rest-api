@@ -23,7 +23,7 @@ const storage = multer.diskStorage({
     cb(null, file.originalname);
   },
   limits: {
-    fileSize: 10485760,
+    fileSize: 1048576,
   },
 });
 
@@ -114,7 +114,7 @@ const newAvatar = async (req, res) => {
     .autocrop()
     .cover(250, 250, Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE)
     .writeAsync(temporaryName);
-  const fileName = `${_id}_${originalName}`;
+  const fileName = `${_id}${originalName ? "_" + originalName : ""}.jpg`;
   const resultName = path.join(storeImage, fileName);
   await fs.rename(temporaryName, resultName);
   const avatarURL = path.join("avatars", fileName);
