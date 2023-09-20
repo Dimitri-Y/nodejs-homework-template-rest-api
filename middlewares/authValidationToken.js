@@ -28,19 +28,20 @@ require("dotenv").config();
 const auth = async (req, res, next) => {
   const { authorization = "" } = req.headers;
   const [bearer, token] = authorization.split(" ");
+  console.log(authorization);
   if (bearer !== "Bearer") {
-    next(Error(`401: "Unauthorized a" ${authorization}`));
+    next(Error(`401: "Not authorized" `));
   }
   try {
     const { id } = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(id);
     if (!user || !user.token || user.token !== token) {
-      next(Error(`401: "Unauthorized b"`));
+      next(Error(`401: "Not authorized"`));
     }
     req.user = user;
     next();
   } catch {
-    next(Error(`401: "Unauthorized c"`));
+    next(Error(`401: "Not authorized "`));
   }
 };
 // const auth = (req, res, next) => {
