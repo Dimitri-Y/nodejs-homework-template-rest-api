@@ -14,6 +14,10 @@ router.post("/logout", auth, ctrlUser.logout);
 
 router.get("/current", auth, ctrlUser.currentUser);
 
+router.get("/verify/:verificationToken", ctrlUser.verifyToken);
+
+router.post("/verify", ctrlUser.reVerify);
+
 router.patch(
   "/avatars",
   auth,

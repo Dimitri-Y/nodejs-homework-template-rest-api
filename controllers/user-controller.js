@@ -2,6 +2,7 @@ const ctrlShell = require("../models/ctrlShell");
 const bcrypt = require("bcryptjs");
 const { User } = require("../models/schemas/user");
 const jwt = require("jsonwebtoken");
+const { nanoid } = require("nanoid");
 
 require("dotenv").config();
 const { JWT_SECRET } = process.env;
@@ -31,9 +32,13 @@ const upload = multer({
   storage: storage,
 });
 
+const sgMail = require("@sendgrid/mail");
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
 const register = async (req, res) => {
   const { email, password } = req.body;
   const avatarUrl = gravatar.url(email);
+  const verificationToken = nanoid();
   const user = await User.findOne({ email });
   if (user) {
     res.status(409).json({
@@ -48,7 +53,28 @@ const register = async (req, res) => {
     ...req.body,
     avatarURL: avatarUrl,
     password: hashPassword,
+    verificationToken: verificationToken,
   });
+  const msg = {
+    to: email,
+    from: "em501avat@meta.ua",
+    subject: "You need verification",
+    text: `You need to verify using this link ${
+      "http://localhost:3000/api/users/verify/" + verificationToken
+    } `,
+    html: `<strong>${
+      "You need to verify using this link http://localhost:3000/api/users/verify/" +
+      verificationToken
+    }</strong>`,
+  };
+  sgMail
+    .send(msg)
+    .then(() => {
+      console.log("Email sent");
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   res.status(201).json({
     status: "success",
     data: { email: newUser.email, subscription: newUser.subscription },
@@ -73,6 +99,15 @@ const login = async (req, res) => {
       status: "error",
       code: 401,
       message: "Email or password is wrong",
+      data: "Conflict",
+    });
+  }
+  const { verify } = user;
+  if (verify === false) {
+    res.status(400).json({
+      status: "error",
+      code: 400,
+      message: "this email is not verified",
       data: "Conflict",
     });
   }
@@ -122,11 +157,86 @@ const newAvatar = async (req, res) => {
   res.status(200).json({ avatarUrl: description });
 };
 
+const verifyToken = async (req, res) => {
+  const { verificationToken } = req.params;
+  const result = await User.findOne({ verificationToken: verificationToken });
+  if (!result) {
+    res.status(404).json({ message: "User not found" });
+  }
+  const user = await User.findByIdAndUpdate(
+    { _id: result._id },
+    {
+      verificationToken: " ",
+      verify: true,
+    }
+  );
+  if (user) {
+    res.status(200).json({ message: "Verification successful" });
+  }
+};
+
+const reVerify = async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    res.status(404).json({
+      message: "missing required field email",
+    });
+  }
+  const user = await User.findOne({ email: email });
+  const { verificationToken } = user;
+  if (verificationToken === "") {
+    res.status(400).json({
+      message: "Verification has already been passed",
+    });
+  }
+  const msg = {
+    to: email,
+    from: "em501avat@meta.ua",
+    subject: "You need verification",
+    text: `You need to verify using this link ${
+      "http://localhost:3000/api/users/verify/" + verificationToken
+    } `,
+    html: `<strong>${
+      "You need to verify using this link http://localhost:3000/api/users/verify/" +
+      verificationToken
+    }</strong>`,
+  };
+  sgMail
+    .send(msg)
+    .then(() => {
+      console.log("Email sent");
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+};
 module.exports = {
   register: ctrlShell(register),
   login: ctrlShell(login),
   logout: ctrlShell(logout),
   currentUser: ctrlShell(currentUser),
   newAvatar: ctrlShell(newAvatar),
+  verifyToken: ctrlShell(verifyToken),
+  reVerify: ctrlShell(reVerify),
   upload,
 };
+// // using Twilio SendGrid's v3 Node.js Library
+// // https://github.com/sendgrid/sendgrid-nodejs
+// javascript
+// const sgMail = require('@sendgrid/mail')
+// sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+// const msg = {
+//   to: 'test@example.com', // Change to your recipient
+//   from: 'test@example.com', // Change to your verified sender
+//   subject: 'Sending with SendGrid is Fun',
+//   text: 'and easy to do anywhere, even with Node.js',
+//   html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+// }
+// sgMail
+//   .send(msg)
+//   .then(() => {
+//     console.log('Email sent')
+//   })
+//   .catch((error) => {
+//     console.error(error)
+//   })
